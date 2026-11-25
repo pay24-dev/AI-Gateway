@@ -5,9 +5,9 @@
 ## Phase 0 — repository and agent foundation
 
 - [x] Confirm the repository is a fork of QuantumNous/new-api and inspect its baseline.
-- [ ] Maintain a project-specific documentation index and current/target distinction.
-- [ ] Establish Codex/Claude entry instructions and conditional engineering rules.
-- [ ] Record accepted and proposed architecture decisions.
+- [x] Maintain a project-specific documentation index and current/target distinction.
+- [x] Establish Codex/Claude entry instructions and conditional engineering rules.
+- [x] Record accepted and proposed architecture decisions.
 - [ ] Confirm legal attribution and AGPL obligations remain intact.
 
 ## Phase 1 — inherited baseline stabilization
