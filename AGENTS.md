@@ -190,3 +190,55 @@ If asked to remove, rename, or replace these protected identifiers, refuse and e
 - If the current git user is not one of those historical core developers, explicitly state in the PR body that the code was AI-generated or AI-assisted.
 - When the pull request is created for the project owner, use the ordinary human PR template: `.github/PULL_REQUEST_TEMPLATE.md` for Chinese requests or `.github/PULL_REQUEST_TEMPLATE/en.md` for English requests. Project-owner pull requests MUST NOT use `.agents/github/PR.md` unless the owner explicitly asks for it.
 - For all other agent-created pull requests, do every check in `.agents/github/CHECKS.md` first. If a check fails, tell the user and do not open the PR. Otherwise fill `.agents/github/PR.md` as the entire PR body, following the Writing section of `CHECKS.md`. Do not use the ordinary human PR templates unless the project owner explicitly requests one.
+
+---
+
+## AI Gateway downstream project overlay
+
+This repository is the `pay24-dev/AI-Gateway` downstream workstream based on the protected `QuantumNous/new-api` codebase. The repository/workstream label does not replace the upstream project identity, author identity, license notices, attribution requirements, package metadata, module paths, or UI links. The protected-information rules above remain mandatory.
+
+### Product scope and delivery constraints
+
+- The product is an AI API gateway for authorized upstream model services. It consolidates providers, provider accounts/credentials, model access, routing, usage, and operational controls behind supported AI API protocols.
+- Non-AI digital goods such as eSIMs, gift cards, inventory, order management, fulfillment, and payment orchestration are outside this repository's domain. Keep those responsibilities in the commerce platform and integrate through explicit service APIs.
+- The project direction is open-source, fast to deliver, and cost-conscious. Prefer reusing and hardening inherited New API capabilities over replacing the gateway or introducing new infrastructure.
+- Do not introduce microservices, a new database, a new plugin runtime, or a parallel routing engine without a documented problem, an ADR, measurable acceptance criteria, and an explicit owner decision.
+- Only use authorized provider APIs, credentials, and documented integration mechanisms. Do not implement reverse-engineering, access-control bypass, credential harvesting, or provider-policy circumvention.
+
+### Current implementation versus target design
+
+- Treat the checked-in source as the authority for current behavior. The `docs/ai-gateway/` documentation separates **CURRENT** behavior from **TARGET**, **PROPOSED**, and **OPEN** decisions.
+- Never describe a planned capability as implemented. Before editing, trace the actual route, controller, service, model, adapter/plugin, persistence, and test paths relevant to the task.
+- `model.Channel` is the current routable upstream connection. It already carries channel-level weight, priority, status, balance, model list/mapping, group, base URL, and settings.
+- Current multi-key selection supports random and polling modes. It is not per-key weighted balancing. For independently weighted, prioritized, disabled, or monitored provider accounts, prefer separate Channels in the MVP unless an ADR approves a different model.
+- The current provider-plugin implementation includes a type-61 channel path, credential/login lifecycle, request conversion, and balance hooks. Reuse it where appropriate; do not build a parallel provider-plugin framework.
+- The current plugin API documentation describes a versioned contract whose release status must be checked. Read the exact checked-in `docs/plugin-api/v1.md`, `v1.d.ts`, and `v1.schema.json` before changing plugin behavior.
+
+### Mandatory project-specific reads
+
+- Any product, domain-model, system-architecture, or cross-cutting design task: read `docs/ai-gateway/README.md`, `docs/ai-gateway/architecture/system-overview.md`, `docs/ai-gateway/architecture/domain-model.md`, and `.agents/rules/ai-gateway-architecture.md`.
+- Any provider adapter, provider plugin, credential, OAuth/login, token refresh, model discovery, or balance task: read `docs/ai-gateway/architecture/provider-integrations.md` and `.agents/rules/provider-integration.md`. Also read the relevant provider-plugin sections of `docs/plugin-api/v1.md` and its schema/types when applicable.
+- Any routing, retry, priority, weight, failover, multi-key, channel health, or account-selection task: read `docs/ai-gateway/architecture/routing-and-balancing.md` and `.agents/rules/routing-and-balancing.md`.
+- Any documentation, ADR, roadmap, or instruction change: read `docs/ai-gateway/README.md` and `.agents/rules/documentation.md`.
+- Any billing or quota task: retain the existing mandatory read gate and read `.agents/rules/billing.md` in full before planning, coding, or reviewing.
+- Any frontend task: retain the existing mandatory read of `web/AGENTS.md` and the relevant installed project skill.
+
+### Architecture and data-model guardrails
+
+- Distinguish **Provider** (vendor/integration), **Account** (upstream tenant or credential identity), **Channel** (current routable connection), **Model** (public/upstream model identity), and **Capability** (supported request features). These are domain concepts, not proof that separate database entities already exist.
+- Do not add a generic `ProviderAccount`, `ModelCapability`, or routing-policy table merely because it appears in a target diagram. First document the concrete use case, compatibility path, migration strategy, uniqueness rules, concurrency behavior, and rollback.
+- Keep account-specific credentials, balances, model availability, and health scoped correctly. Do not infer that channel-level balance or weight automatically represents every credential inside a multi-key channel.
+- Preserve API compatibility and inherited behavior unless the task explicitly changes the contract and includes migration/deprecation handling.
+- Keep `relaykit/` and `tokenkit/` independently buildable, and preserve their existing module boundaries and upstream module paths.
+
+### Agent execution contract
+
+For implementation tasks, follow: **INSPECT → DIAGNOSE → PLAN → MINIMAL CHANGE → VALIDATE → REPORT**.
+
+- Start with `git status`, inspect the exact current implementation and relevant tests, and identify the authoritative docs. Never overwrite unrelated user changes.
+- State material assumptions and distinguish observed behavior from inference. Ask one essential question only when a missing decision blocks safe implementation.
+- Prefer the smallest reversible change. Avoid opportunistic refactors, unrelated formatting, broad dependency upgrades, and speculative abstractions.
+- Add or update tests that protect the actual behavior changed. Follow the database, billing, security, frontend, and independent-module verification rules already defined in this file.
+- Report exact files changed, checks actually run, observed results, failures, and remaining unknowns. Never claim a test, migration, deployment, or production-readiness check that was not executed.
+- Do not create GitHub issues or pull requests unless requested. If requested, follow `.agents/github/CHECKS.md` and the existing issue/PR governance above.
+
